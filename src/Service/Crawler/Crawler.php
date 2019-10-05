@@ -2,9 +2,12 @@
 
 namespace App\Service\Crawler;
 
+use App\Entity\NewsProvider;
+use App\Entity\NewsProviderCategory;
+
 interface Crawler
 {
-    public function fetchPostLinksOn(string $url): array;
+    public function fetchPostLinksFromProvider(NewsProvider $provider, NewsProviderCategory ...$categoriesToFetch): array;
 
     //public function getPostLinks(string $url): array;
 
