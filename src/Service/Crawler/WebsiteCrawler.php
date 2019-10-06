@@ -10,6 +10,7 @@ use App\Service\Crawler\Strategy\KibrisPostasiStrategy;
 use App\Service\Crawler\Strategy\StrategyFactory;
 use App\Types\Category;
 use GuzzleHttp\Client;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
 use Symfony\Component\DomCrawler\Link;
 
@@ -31,14 +32,21 @@ class WebsiteCrawler implements Crawler
      */
     private $strategyFactory;
 
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
+
     public function __construct(
         //Client $httpClient
         //,
         //TeBilisimStrategy $crawlerStrategy
-        StrategyFactory $strategyFactory
+        StrategyFactory $strategyFactory,
+        LoggerInterface $logger
     ) {
         $this->httpClient      = new Client();
         $this->strategyFactory = $strategyFactory;
+        $this->logger          = $logger;
     }
 
     public function fetchPostLinksFromProvider(NewsProvider $provider, NewsProviderCategory ...$categoriesToFetch): array
@@ -50,7 +58,18 @@ class WebsiteCrawler implements Crawler
         $crawlerStrategy = $this->strategyFactory->getStrategyFor($provider);
 
         $postLinks = [];
+
+        $this->logger->notice(sprintf(
+            "Crawling: %s (%s) - %d categories: %s",
+            $provider->getName(),
+            $provider->getUrl(),
+            count($categoriesToFetch),
+            implode(", ", $categoriesToFetch)
+        ));
+
         foreach ($categoriesToFetch as $providerCategory) {
+            //$this->logger->info("Category: " . $providerCategory);
+
             $fetchedLinks = $this->fetchInternalLinksOn(
                 implode('/', [$provider->getUrl(), $providerCategory->getPath()])
             );
@@ -62,10 +81,20 @@ class WebsiteCrawler implements Crawler
                 }
             );
 
+            //$this->logger->info(sprintf("%d post links fetched.", count($fetchedPostLinks)));
+
             $postLinks = array_merge($postLinks, $fetchedPostLinks);
         }
 
-        return array_unique($postLinks);
+        $postLinks = array_unique($postLinks);
+
+        $this->logger->info(sprintf(
+            "%d post links fetched for %d categories.",
+            count($postLinks),
+            count($categoriesToFetch)
+        ));
+
+        return $postLinks;
     }
 
     private function fetchInternalLinksOn(string $url): array

@@ -25,7 +25,7 @@ class NewsProviderCategory
     /**
      * @return Category
      */
-    public function getCategory(): string
+    public function getCategory(): Category
     {
         return new Category($this->category);
     }
@@ -36,5 +36,10 @@ class NewsProviderCategory
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    public function __toString()
+    {
+        return "[" . $this->getCategory()->getValue() . " => " . $this->getPath() . "]";
     }
 }
