@@ -2,6 +2,10 @@
 
 namespace App;
 
+use Acelaya\Doctrine\Type\PhpEnumType;
+use App\Types\Category;
+use App\Types\ProviderType;
+use Doctrine\DBAL\Types\Type;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Resource\FileResource;
@@ -49,5 +53,20 @@ class Kernel extends BaseKernel
         $routes->import($confDir.'/{routes}/'.$this->environment.'/**/*'.self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir.'/{routes}/*'.self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir.'/{routes}'.self::CONFIG_EXTS, '/', 'glob');
+    }
+
+    public function boot()
+    {
+        parent::boot();
+
+        PhpEnumType::registerEnumType(Category::class);
+        PhpEnumType::registerEnumType(ProviderType::class);
+
+        $em = $this->getContainer()->get('doctrine.orm.default_entity_manager');
+
+        $platform = $em->getConnection()->getDatabasePlatform();
+        $platform->registerDoctrineTypeMapping('VARCHAR', Category::class);
+        $platform->registerDoctrineTypeMapping('VARCHAR', ProviderType::class);
+
     }
 }
