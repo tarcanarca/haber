@@ -4,11 +4,7 @@ namespace App\Service\Crawler;
 
 use App\Entity\NewsProvider;
 use App\Entity\NewsProviderCategory;
-use App\Service\Crawler\Strategy\CrawlerStrategy;
-use App\Service\Crawler\Strategy\TeBilisimStrategy;
-use App\Service\Crawler\Strategy\KibrisPostasiStrategy;
 use App\Service\Crawler\Strategy\StrategyFactory;
-use App\Types\Category;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
@@ -38,15 +34,17 @@ class WebsiteCrawler implements Crawler
     private $logger;
 
     public function __construct(
-        //Client $httpClient
-        //,
-        //TeBilisimStrategy $crawlerStrategy
         StrategyFactory $strategyFactory,
         LoggerInterface $logger
     ) {
         $this->httpClient      = new Client();
         $this->strategyFactory = $strategyFactory;
         $this->logger          = $logger;
+    }
+
+    public function getHtmlContents(string $url): string
+    {
+        return $this->getDomCrawler($url)->html();
     }
 
     public function fetchPostLinksFromProvider(NewsProvider $provider, NewsProviderCategory ...$categoriesToFetch): array

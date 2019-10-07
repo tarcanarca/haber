@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\NewsProvider;
 use App\Entity\NewsProviderCategory;
 use App\Service\Crawler\WebsiteCrawler;
+use App\Service\Parser\ParserFactory;
+use App\Service\Parser\PostItemParser;
 use App\Types\Category;
 use App\Types\ProviderType;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,23 +18,52 @@ class CrawlController
      */
     private $crawler;
 
-    public function __construct(WebsiteCrawler $crawler)
+    /**
+     * @var \App\Service\Parser\PostItemParser
+     */
+    private $postItemParser;
+
+    /**
+     * @var \App\Service\Parser\ParserFactory
+     */
+    private $postItemParserFactory;
+
+    public function __construct(WebsiteCrawler $crawler, ParserFactory $postItemParserFactory)
     {
-        $this->crawler = $crawler;
+        $this->crawler       = $crawler;
+        $this->postItemParserFactory = $postItemParserFactory;
     }
 
     public function index(): Response
     {
         $postLinks = [];
+        $i = 0;
 
         foreach ($this->getProvidersToCrawl() as $provider) {
             $postLinks = array_merge(
                 $postLinks,
                 $this->crawler->fetchPostLinksFromProvider($provider)
             );
+
+            foreach ($postLinks as $postLink) {
+                $html = $this->crawler->getHtmlContents($postLink);
+
+                // persist??
+                // persist??
+
+                $postItems[] = $this->postItemParserFactory->getParserFor($provider)->parsePost($html);
+
+                //$this->postRepository->persist($postItem);
+
+                // stop after 1
+                if ($i++ > 4) {
+                    break 2;
+                }
+            }
         }
 
-        return new Response(implode("<br>", $postLinks));
+        //return new Response(implode("<br>", $postLinks));
+        return new Response("<pre>" . print_r($postItems, true) . "</pre>");
     }
 
     /**
