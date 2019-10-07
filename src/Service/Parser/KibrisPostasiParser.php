@@ -23,8 +23,10 @@ class KibrisPostasiParser implements PostItemParser
             return strstr($url, "/upload/news");
         });
 
-        $content = preg_replace("/\sKıbrıs Postası( \S{1,3} .{1,}){0,1}/", "", $content);
+        $content = preg_replace("/\sKıbrıs Postası( -{1,3} .{1,}){0,1}/", "", $content);
         $content = ltrim($content);
+
+        $spot = ltrim($spot);
 
         setlocale(LC_TIME, "tr_TR");
         $parsedDate = strptime($createdAt, '%d %B %Y,');
