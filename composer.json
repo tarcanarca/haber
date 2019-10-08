@@ -9,6 +9,7 @@
         "doctrine/doctrine-bundle": "^1.11",
         "fabpot/goutte": "^3.2",
         "guzzlehttp/guzzle": "^6.3",
+        "league/url": "^3.3",
         "myclabs/php-enum": "^1.7",
         "sensio/framework-extra-bundle": "^5.1",
         "symfony/asset": "4.3.*",

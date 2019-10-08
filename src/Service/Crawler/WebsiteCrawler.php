@@ -5,6 +5,7 @@ namespace App\Service\Crawler;
 use App\Entity\NewsProvider;
 use App\Entity\NewsProviderCategory;
 use App\Service\Crawler\Strategy\StrategyFactory;
+use App\ValueObject\WebsiteContents;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
@@ -42,9 +43,12 @@ class WebsiteCrawler implements Crawler
         $this->logger          = $logger;
     }
 
-    public function getHtmlContents(string $url): string
+    public function getHtmlContents(string $url): WebsiteContents
     {
-        return $this->getDomCrawler($url)->html();
+        return new WebsiteContents(
+            $url,
+            $this->getDomCrawler($url)->html()
+        );
     }
 
     public function fetchPostLinksFromProvider(NewsProvider $provider, NewsProviderCategory ...$categoriesToFetch): array

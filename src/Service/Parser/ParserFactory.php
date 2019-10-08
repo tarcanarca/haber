@@ -3,7 +3,6 @@
 namespace App\Service\Parser;
 
 use App\Entity\NewsProvider;
-use App\Types\ProviderType;
 
 class ParserFactory
 {
@@ -12,19 +11,29 @@ class ParserFactory
      */
     private $kibrisPostasiParser;
 
-    public function __construct(KibrisPostasiParser $kibrisPostasiParser)
-    {
+    /**
+     * @var \App\Service\Parser\GundemKibrisParser
+     */
+    private $gundemKibrisParser;
+
+    public function __construct(
+        KibrisPostasiParser $kibrisPostasiParser,
+        GundemKibrisParser $gundemKibrisParser
+    ) {
         $this->kibrisPostasiParser = $kibrisPostasiParser;
+        $this->gundemKibrisParser  = $gundemKibrisParser;
     }
 
     public function getParserFor(NewsProvider $provider): PostItemParser
     {
-        $parsedUrl = parse_url($provider->getUrl());
-        $website   = str_replace("www.", "", $parsedUrl["host"]);
+        $domain = $provider->getUrl()->getDomain();
 
-        switch ($website) {
+        switch ($domain) {
             case "kibrispostasi.com":
                 return $this->kibrisPostasiParser;
+
+            case "gundemkibris.com":
+                return $this->gundemKibrisParser;
         }
     }
 }

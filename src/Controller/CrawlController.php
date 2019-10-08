@@ -46,12 +46,20 @@ class CrawlController
             );
 
             foreach ($postLinks as $postLink) {
-                $html = $this->crawler->getHtmlContents($postLink);
+                $websiteContents = $this->crawler->getHtmlContents($postLink);
 
                 // persist??
                 // persist??
+                $parser   = $this->postItemParserFactory->getParserFor($provider);
+                $postItem = $parser->parsePost($websiteContents);
+                $postItem->setImages(
+                    array_merge(
+                        [$parser->getPostMainImageUrl($websiteContents)],
+                        $parser->getPostGalleryImageUrls($websiteContents)
+                    )
+                );
 
-                $postItems[] = $this->postItemParserFactory->getParserFor($provider)->parsePost($html);
+                $postItems[] = $postItem;
 
                 //$this->postRepository->persist($postItem);
 
@@ -62,7 +70,6 @@ class CrawlController
             }
         }
 
-        //return new Response(implode("<br>", $postLinks));
         return new Response("<pre>" . print_r($postItems, true) . "</pre>");
     }
 

@@ -7,7 +7,7 @@ use App\ValueObject\Url;
 use App\ValueObject\WebsiteContents;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
 
-class KibrisPostasiParser implements PostItemParser
+class GundemKibrisParser implements PostItemParser
 {
     public function parsePost(WebsiteContents $contents): PostItem
     {

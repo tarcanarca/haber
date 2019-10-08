@@ -34,6 +34,11 @@ class PostItem
      */
     private $lastUpdatedAt;
 
+    /**
+     * @var array
+     */
+    private $images;
+
     public function __construct(
         string $providerId,
         string $heading,
@@ -116,5 +121,17 @@ class PostItem
     public function setSpot(string $spot): void
     {
         $this->spot = $spot;
+    }
+
+    public function setImages(array $images): PostItem
+    {
+        $this->images = $images;
+
+        return $this;
+    }
+
+    public function getImages(): array
+    {
+        return $this->images;
     }
 }

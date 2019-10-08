@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Types\ProviderType;
+use App\ValueObject\Url;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -78,11 +79,8 @@ class NewsProvider
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
-    public function getUrl(): string
+    public function getUrl(): Url
     {
-        return $this->url;
+        return new Url($this->url);
     }
 }
