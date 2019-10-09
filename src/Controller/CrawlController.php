@@ -6,9 +6,10 @@ use App\Entity\NewsProvider;
 use App\Entity\NewsProviderCategory;
 use App\Service\Crawler\WebsiteCrawler;
 use App\Service\Parser\ParserFactory;
-use App\Service\Parser\PostItemParser;
+use App\Service\Persistence\UnparsedPostPersister;
 use App\Types\Category;
 use App\Types\ProviderType;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class CrawlController
@@ -19,19 +20,30 @@ class CrawlController
     private $crawler;
 
     /**
-     * @var \App\Service\Parser\PostItemParser
-     */
-    private $postItemParser;
-
-    /**
      * @var \App\Service\Parser\ParserFactory
      */
     private $postItemParserFactory;
 
-    public function __construct(WebsiteCrawler $crawler, ParserFactory $postItemParserFactory)
-    {
-        $this->crawler       = $crawler;
+    /**
+     * @var \App\Service\Persistence\UnparsedPostPersister
+     */
+    private $unparsedPostPersister;
+
+    /**
+     * @var \App\Repository\NewsProviderRepository
+     */
+    private $providerRepository;
+
+    public function __construct(
+        WebsiteCrawler $crawler,
+        ParserFactory $postItemParserFactory,
+        UnparsedPostPersister $unparsedPostPersister,
+        EntityManagerInterface $entityManager
+    ) {
+        $this->crawler               = $crawler;
         $this->postItemParserFactory = $postItemParserFactory;
+        $this->unparsedPostPersister = $unparsedPostPersister;
+        $this->providerRepository    = $entityManager->getRepository(NewsProvider::class);
     }
 
     public function index(): Response
@@ -39,7 +51,10 @@ class CrawlController
         $postLinks = [];
         $i = 0;
 
-        foreach ($this->getProvidersToCrawl() as $provider) {
+        /** @var NewsProvider $provider */
+        foreach ($this->providerRepository->findAll() as $provider) {
+            $parser = $this->postItemParserFactory->getParserFor($provider);
+
             $postLinks = array_merge(
                 $postLinks,
                 $this->crawler->fetchPostLinksFromProvider($provider)
@@ -48,18 +63,19 @@ class CrawlController
             foreach ($postLinks as $postLink) {
                 $websiteContents = $this->crawler->getHtmlContents($postLink);
 
-                // persist??
-                // persist??
-                $parser   = $this->postItemParserFactory->getParserFor($provider);
-                $postItem = $parser->parsePost($websiteContents);
-                $postItem->setImages(
-                    array_merge(
-                        [$parser->getPostMainImageUrl($websiteContents)],
-                        $parser->getPostGalleryImageUrls($websiteContents)
-                    )
+                $this->unparsedPostPersister->persistRawPostContents(
+                    $provider,
+                    $websiteContents,
+                    $parser->getProviderIdForPost($websiteContents)
                 );
 
-                $postItems[] = $postItem;
+                if ("dont" === "continue") { // persist??
+                    // persist??
+                    $postItem = $parser->parsePost($websiteContents);
+                    $postItem->setImages(array_merge([$parser->getPostMainImageUrl($websiteContents)],
+                        $parser->getPostGalleryImageUrls($websiteContents)));
+                    $postItems[] = $postItem;
+                }
 
                 //$this->postRepository->persist($postItem);
 
@@ -70,7 +86,8 @@ class CrawlController
             }
         }
 
-        return new Response("<pre>" . print_r($postItems, true) . "</pre>");
+        return new Response("<pre>Persisted " . $i . " posts.</pre>");
+        //return new Response("<pre>" . print_r($postItems, true) . "</pre>");
     }
 
     /**

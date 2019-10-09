@@ -4,16 +4,18 @@ namespace App\Entity;
 
 use App\Types\ProviderType;
 use App\ValueObject\Url;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\NewsProviderRepository")
  * @ORM\Table(name="newsproviders")
  */
 class NewsProvider
 {
     /**
      * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
      */
     private $id;
@@ -36,8 +38,9 @@ class NewsProvider
     private $type;
 
     /**
-     * @ORM\OneToMany(targetEntity="NewsProviderCategory", mappedBy="newsProvider", cascade={"persist", "remove", "merge"})
      * @var \App\Entity\NewsProviderCategory[]
+     *
+     * @ORM\OneToMany(targetEntity="NewsProviderCategory", mappedBy="newsProvider", cascade={"persist", "remove", "merge"})
      */
     private $categories;
 
@@ -56,7 +59,7 @@ class NewsProvider
     /**
      * @return \App\Entity\NewsProviderCategory[]
      */
-    public function getCategories(): array
+    public function getCategories(): Collection
     {
         return $this->categories;
     }

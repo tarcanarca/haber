@@ -6,9 +6,12 @@ use App\Entity\PostItem;
 use App\ValueObject\Url;
 use App\ValueObject\WebsiteContents;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
+use Webmozart\Assert\Assert;
 
 class GundemKibrisParser implements PostItemParser
 {
+    use ParserTools;
+
     public function parsePost(WebsiteContents $contents): PostItem
     {
         $domCrawler = $this->getDomCrawler($contents->getHtmlContents());
@@ -93,5 +96,10 @@ class GundemKibrisParser implements PostItemParser
         $domCrawler->addHtmlContent($postHtmlContent);
 
         return $domCrawler;
+    }
+
+    public function getProviderIdForPost(WebsiteContents $contents): string
+    {
+        return $this->matchPostIdFromUrl('/\-h([0-9]{6,9}).html/', $contents->getUrl());
     }
 }

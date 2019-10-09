@@ -65,8 +65,8 @@ class WebsiteCrawler implements Crawler
             "Crawling: %s (%s) - %d categories: %s",
             $provider->getName(),
             $provider->getUrl(),
-            count($categoriesToFetch),
-            implode(", ", $categoriesToFetch)
+            $categoriesToFetch->count(),
+            implode(", ", $categoriesToFetch->getValues())
         ));
 
         foreach ($categoriesToFetch as $providerCategory) {

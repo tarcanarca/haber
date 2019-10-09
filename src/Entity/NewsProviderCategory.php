@@ -14,20 +14,22 @@ class NewsProviderCategory
     /**
      * @var int
      * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
      */
     private $id;
 
     /**
      * @var NewsProvider
-     * @ORM\ManyToOne(targetEntity="NewsProvider", inversedBy="categories")
-     * @ORM\JoinColumn(name="newsprovider_id", referencedColumnName="id")
+     *
+     * @ORM\ManyToOne(targetEntity="App\Entity\NewsProvider", inversedBy="categories")
+     * @ORM\JoinColumn(name="newsprovider_id", referencedColumnName="id", nullable=FALSE)
      */
     private $newsProvider;
 
     /**
      * @var Category
-     * @ORM\Column(type=Category::class, name="key")
+     * @ORM\Column(type=Category::class, name="category_key")
      */
     private $category;
 
