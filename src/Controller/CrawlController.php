@@ -55,7 +55,7 @@ class CrawlController
         $persistedCount = 0;
 
         /** @var NewsProvider $provider */
-        foreach ($this->getProvidersToCrawl() as $provider) {
+        foreach ($this->providerRepository->findAll() as $provider) {
             $parser = $this->postItemParserFactory->getParserFor($provider);
 
             $postLinks = array_merge(
@@ -102,14 +102,14 @@ class CrawlController
     private function getProvidersToCrawl(): array
     {
         return [
-//            (new NewsProvider(ProviderType::KIBRIS_POSTASI(), "Kibris Postasi", "http://www.kibrispostasi.com"))
-//                ->setCategories([
-//                    new NewsProviderCategory(Category::KIBRIS(), "c35-KIBRIS_HABERLERI"),
-//                ]),
+            (new NewsProvider(ProviderType::KIBRIS_POSTASI(), "Kibris Postasi", "http://www.kibrispostasi.com"))
+                ->setCategories(new ArrayCollection([
+                    new NewsProviderCategory(Category::KIBRIS(), "c35-KIBRIS_HABERLERI"),
+                ])),
             (new NewsProvider(ProviderType::TE_BILISIM(), "Gundem Kibris", "http://www.gundemkibris.com"))
                 ->setCategories(new ArrayCollection([
-                    new NewsProviderCategory(Category::DUNYA(), "dunya"),
                     new NewsProviderCategory(Category::KIBRIS(), "kibris"),
+                    new NewsProviderCategory(Category::DUNYA(), "dunya"),
                 ])),
             (new NewsProvider(ProviderType::CM_HABER(), "Detay Kibris", "http://www.detaykibris.com"))
                 ->setCategories(new ArrayCollection([

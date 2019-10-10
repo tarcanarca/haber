@@ -7,13 +7,13 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity()
  * @ORM\Table(
- *     name="unparsedposts",
+ *     name="rawposts",
  *     uniqueConstraints={
  *         @ORM\UniqueConstraint(name="search_idx", columns={"newsprovider_id", "provider_key"})
  *     }
  * )
  */
-class UnparsedPost
+class RawPost
 {
     /**
      * @var int
@@ -58,7 +58,7 @@ class UnparsedPost
         return $this->id;
     }
 
-    public function setId(int $id): UnparsedPost
+    public function setId(int $id): RawPost
     {
         $this->id = $id;
 
@@ -70,7 +70,7 @@ class UnparsedPost
         return $this->provider;
     }
 
-    public function setProvider(NewsProvider $provider): UnparsedPost
+    public function setProvider(NewsProvider $provider): RawPost
     {
         $this->provider = $provider;
 
@@ -85,7 +85,7 @@ class UnparsedPost
         return $this->providerKey;
     }
 
-    public function setProviderKey(string $providerKey): UnparsedPost
+    public function setProviderKey(string $providerKey): RawPost
     {
         $this->providerKey = $providerKey;
 
@@ -97,7 +97,7 @@ class UnparsedPost
         return $this->url;
     }
 
-    public function setUrl(string $url): UnparsedPost
+    public function setUrl(string $url): RawPost
     {
         $this->url = $url;
 
@@ -109,7 +109,7 @@ class UnparsedPost
         return $this->contents;
     }
 
-    public function setContents(string $contents): UnparsedPost
+    public function setContents(string $contents): RawPost
     {
         $this->contents = $contents;
 

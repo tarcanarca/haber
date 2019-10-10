@@ -3,7 +3,7 @@
 namespace App\Service\Persistence;
 
 use App\Entity\NewsProvider;
-use App\Entity\UnparsedPost;
+use App\Entity\RawPost;
 use App\ValueObject\WebsiteContents;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,7 +23,7 @@ class UnparsedPostPersister
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->repository    = $entityManager->getRepository(UnparsedPost::class);
+        $this->repository    = $entityManager->getRepository(RawPost::class);
     }
 
     /**
@@ -33,8 +33,8 @@ class UnparsedPostPersister
         NewsProvider $provider,
         WebsiteContents $contents,
         string $providerKey
-    ): UnparsedPost {
-        /** @var UnparsedPost $duplicate */
+    ): RawPost {
+        /** @var RawPost $duplicate */
         $duplicate = $this->repository->findOneBy([
             "provider"    => $provider,
             "providerKey" => $providerKey,
@@ -48,7 +48,7 @@ class UnparsedPostPersister
             ));
         }
 
-        $unparsedPost = new UnparsedPost();
+        $unparsedPost = new RawPost();
 
         $unparsedPost->setProvider($provider)
             ->setContents($contents->getHtmlContents())
