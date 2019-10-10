@@ -68,7 +68,7 @@ class CrawlController
                 $providerPostId  = $parser->getProviderIdForPost($websiteContents);
 
                 try {
-//                    $this->unparsedPostPersister->persistRawPostContents($provider, $websiteContents, $providerPostId);
+                    $this->unparsedPostPersister->persistRawPostContents($provider, $websiteContents, $providerPostId);
                 } catch (DuplicateException $exception) {
                     continue;
                 }

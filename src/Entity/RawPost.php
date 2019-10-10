@@ -10,6 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
  *     name="rawposts",
  *     uniqueConstraints={
  *         @ORM\UniqueConstraint(name="search_idx", columns={"newsprovider_id", "provider_key"})
+ *     },
+ *     indexes={
+ *         @ORM\Index(name="is_processed", columns={"processed"})
  *     }
  * )
  */
@@ -52,6 +55,13 @@ class RawPost
      * @ORM\Column(type="text")
      */
     private $contents;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(type="bit")
+     */
+    private $processed;
 
     public function getId(): int
     {

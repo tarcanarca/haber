@@ -4,6 +4,7 @@ namespace App;
 
 use Acelaya\Doctrine\Type\PhpEnumType;
 use App\Types\Category;
+use App\Types\ORM\BitType;
 use App\Types\ProviderType;
 use Doctrine\DBAL\Types\Type;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -62,11 +63,14 @@ class Kernel extends BaseKernel
         PhpEnumType::registerEnumType(Category::class);
         PhpEnumType::registerEnumType(ProviderType::class);
 
+        Type::addType("bit", BitType::class);
+
         $em = $this->getContainer()->get('doctrine.orm.default_entity_manager');
 
         $platform = $em->getConnection()->getDatabasePlatform();
         $platform->registerDoctrineTypeMapping('VARCHAR', Category::class);
         $platform->registerDoctrineTypeMapping('VARCHAR', ProviderType::class);
+        $platform->registerDoctrineTypeMapping('BIT', "bit");
 
     }
 }
