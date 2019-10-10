@@ -67,7 +67,7 @@ class NewsProvider
     /**
      * @param \App\Entity\NewsProviderCategory[] $categories
      */
-    public function setCategories(array $categories): self
+    public function setCategories(Collection $categories): self
     {
         $this->categories = $categories;
 

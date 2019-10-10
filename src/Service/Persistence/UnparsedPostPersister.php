@@ -26,6 +26,9 @@ class UnparsedPostPersister
         $this->repository    = $entityManager->getRepository(UnparsedPost::class);
     }
 
+    /**
+     * @throws \App\Service\Persistence\DuplicateException
+     */
     public function persistRawPostContents(
         NewsProvider $provider,
         WebsiteContents $contents,
@@ -38,7 +41,11 @@ class UnparsedPostPersister
         ]);
 
         if (null !== $duplicate) {
-            return $duplicate;
+            throw new DuplicateException(sprintf(
+                "Entity (ID: %d) exists, provider key: %s",
+                $duplicate->getId(),
+                $duplicate->getProviderKey()
+            ));
         }
 
         $unparsedPost = new UnparsedPost();

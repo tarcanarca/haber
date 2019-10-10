@@ -19,7 +19,6 @@ class KibrisPostasiParser implements PostItemParser
         $heading   = $domCrawler->filter("#content h1.title")->text();
         $spot      = $domCrawler->filter("#content .brief")->text();
         $content   = $domCrawler->filter("#content .full")->text();
-        $printLink = $domCrawler->filter(".print > a")->link();
         $createdAt = $domCrawler->filter("#main_left .int_roll_top:nth-child(2)")->text();
 
         $spot    = ltrim($spot);
@@ -41,15 +40,13 @@ class KibrisPostasiParser implements PostItemParser
 
         $createdAt = $createdAt->setTimezone(new \DateTimeZone("UTC"));
 
-        $providerId = str_replace("http://www.kibrispostasi.com/print.php?news=", "", $printLink->getUri());
+        $postItem = new PostItem();
+        $postItem->setHeading($heading)
+                 ->setSpot($spot)
+                 ->setContents($content)
+                 ->setCreatedAt($createdAt);
 
-        return new PostItem(
-            $providerId,
-            $heading,
-            $spot,
-            $content,
-            $createdAt
-        );
+        return $postItem;
     }
 
     public function getPostMainImageUrl(WebsiteContents $contents): string

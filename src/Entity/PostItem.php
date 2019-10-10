@@ -39,20 +39,6 @@ class PostItem
      */
     private $images;
 
-    public function __construct(
-        string $providerId,
-        string $heading,
-        string $spot,
-        string $contents,
-        \DateTimeImmutable $createdAt
-    ) {
-        $this->providerId = $providerId;
-        $this->heading    = $heading;
-        $this->spot       = $spot;
-        $this->contents   = $contents;
-        $this->createdAt  = $createdAt;
-    }
-
     public function getProviderId(): string
     {
         return $this->providerId;
@@ -118,9 +104,11 @@ class PostItem
         return $this->spot;
     }
 
-    public function setSpot(string $spot): void
+    public function setSpot(string $spot): PostItem
     {
         $this->spot = $spot;
+
+        return $this;
     }
 
     public function setImages(array $images): PostItem
