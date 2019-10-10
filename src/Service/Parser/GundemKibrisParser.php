@@ -20,12 +20,6 @@ class GundemKibrisParser implements PostItemParser
         $content    = $domCrawler->filter("#newsbody p")->text();;
         $createdAt  = $domCrawler->filter(".tarih-degistir")->attr('data-date');
 
-        try {
-            $lastUpdatedAt = $domCrawler->filter("#newstext .muted.pull-right span")->text();
-        } catch (\InvalidArgumentException $exception) {
-            $lastUpdatedAt = null;
-        }
-
         $content = preg_replace("/\sKıbrıs Postası( -{1,3} .{1,}){0,1}/", "", $content);
         $content = ltrim($content);
 
@@ -36,10 +30,13 @@ class GundemKibrisParser implements PostItemParser
             ->setContents($content)
             ->setCreatedAt($createdAt->setTimezone(new \DateTimeZone("UTC")));
 
-        if (preg_match("/: (.*)$/", $lastUpdatedAt, $matches)) {
-            $lastUpdatedAt = \DateTimeImmutable::createFromFormat("d.m.Y H:i", $matches[1], new \DateTimeZone("+0100")) ?? null;
 
+        try {
+            $lastUpdatedAt = $domCrawler->filter("#newstext .muted.pull-right span")->text();
+            $lastUpdatedAt = \DateTimeImmutable::createFromFormat("d.m.Y H:i", $lastUpdatedAt, new \DateTimeZone("+0100")) ?? null;
             $postItem->setLastUpdatedAt($lastUpdatedAt->setTimezone(new \DateTimeZone("UTC")));
+        } catch (\InvalidArgumentException $exception) {
+            // nevermind
         }
 
         return $postItem;
