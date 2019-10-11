@@ -6,6 +6,7 @@ use App\Entity\NewsProvider;
 use App\Entity\NewsProviderCategory;
 use App\Service\Crawler\Strategy\StrategyFactory;
 use App\ValueObject\WebsiteContents;
+use Doctrine\Common\Collections\Collection;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
@@ -70,7 +71,7 @@ class WebsiteCrawler implements Crawler
         return new WebsiteContents($url, $htmlContents);
     }
 
-    public function fetchPostLinksFromProvider(NewsProvider $provider, NewsProviderCategory ...$categoriesToFetch): array
+    public function fetchPostLinksFromProvider(NewsProvider $provider, iterable $categoriesToFetch): array
     {
         $categoriesToFetch = empty($categoriesToFetch)
             ? $provider->getCategories()

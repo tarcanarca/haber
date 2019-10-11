@@ -7,7 +7,7 @@ use App\Entity\NewsProviderCategory;
 
 interface Crawler
 {
-    public function fetchPostLinksFromProvider(NewsProvider $provider, NewsProviderCategory ...$categoriesToFetch): array;
+    public function fetchPostLinksFromProvider(NewsProvider $provider, iterable $categoriesToFetch): array;
 
     //public function getPostLinks(string $url): array;
 

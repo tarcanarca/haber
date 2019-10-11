@@ -16,12 +16,19 @@ class ParserFactory
      */
     private $gundemKibrisParser;
 
+    /**
+     * @var \App\Service\Parser\DetayKibrisParser
+     */
+    private $detayKibrisParser;
+
     public function __construct(
         KibrisPostasiParser $kibrisPostasiParser,
-        GundemKibrisParser $gundemKibrisParser
+        GundemKibrisParser $gundemKibrisParser,
+        DetayKibrisParser $detayKibrisParser
     ) {
         $this->kibrisPostasiParser = $kibrisPostasiParser;
         $this->gundemKibrisParser  = $gundemKibrisParser;
+        $this->detayKibrisParser   = $detayKibrisParser;
     }
 
     public function getParserFor(NewsProvider $provider): PostItemParser
@@ -34,6 +41,9 @@ class ParserFactory
 
             case "gundemkibris.com":
                 return $this->gundemKibrisParser;
+
+            case "detaykibris.com":
+                return $this->detayKibrisParser;
         }
     }
 }
