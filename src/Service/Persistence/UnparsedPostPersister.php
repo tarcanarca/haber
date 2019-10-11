@@ -5,7 +5,6 @@ namespace App\Service\Persistence;
 use App\Entity\NewsProvider;
 use App\Entity\RawPost;
 use App\ValueObject\WebsiteContents;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
 class UnparsedPostPersister

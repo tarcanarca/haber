@@ -13,5 +13,5 @@ interface PostItemParser
 
     public function getPostGalleryImageUrls(WebsiteContents $contents): array;
 
-    public function getProviderIdForPost(WebsiteContents $contents): string;
+    public function getProviderIdFromUrl(string $postUrl): string;
 }

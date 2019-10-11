@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\RawPostRepository")
  * @ORM\Table(
  *     name="rawposts",
  *     uniqueConstraints={
@@ -61,7 +61,7 @@ class RawPost
      *
      * @ORM\Column(type="bit")
      */
-    private $processed;
+    private $processed = false;
 
     public function getId(): int
     {

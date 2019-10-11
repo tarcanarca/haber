@@ -66,8 +66,8 @@ class GundemKibrisParser implements PostItemParser
         return $domCrawler;
     }
 
-    public function getProviderIdForPost(WebsiteContents $contents): string
+    public function getProviderIdFromUrl(string $postUrl): string
     {
-        return $this->matchPostIdFromUrl('/\-h([0-9]{6,9}).html/', $contents->getUrl());
+        return $this->matchPostIdFromUrl('/\-h([0-9]{6,9}).html/', $postUrl);
     }
 }

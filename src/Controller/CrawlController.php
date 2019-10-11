@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\NewsProvider;
 use App\Entity\NewsProviderCategory;
+use App\Entity\RawPost;
 use App\Service\Crawler\WebsiteCrawler;
 use App\Service\Parser\ParserFactory;
 use App\Service\Persistence\DuplicateException;
@@ -12,6 +13,7 @@ use App\Types\Category;
 use App\Types\ProviderType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class CrawlController
@@ -36,21 +38,33 @@ class CrawlController
      */
     private $providerRepository;
 
+    /**
+     * @var \App\Repository\RawPostRepository
+     */
+    private $rawPostRepository;
+
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
+
     public function __construct(
         WebsiteCrawler $crawler,
         ParserFactory $postItemParserFactory,
         UnparsedPostPersister $unparsedPostPersister,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        LoggerInterface $logger
     ) {
         $this->crawler               = $crawler;
         $this->postItemParserFactory = $postItemParserFactory;
         $this->unparsedPostPersister = $unparsedPostPersister;
         $this->providerRepository    = $entityManager->getRepository(NewsProvider::class);
+        $this->rawPostRepository     = $entityManager->getRepository(RawPost::class);
+        $this->logger                = $logger;
     }
 
     public function index(): Response
     {
-        $postLinks = [];
         $i = 0;
         $persistedCount = 0;
 
@@ -58,14 +72,17 @@ class CrawlController
         foreach ($this->providerRepository->findAll() as $provider) {
             $parser = $this->postItemParserFactory->getParserFor($provider);
 
-            $postLinks = array_merge(
-                $postLinks,
-                $this->crawler->fetchPostLinksFromProvider($provider)
-            );
+            $postLinks = $this->crawler->fetchPostLinksFromProvider($provider);
 
             foreach ($postLinks as $postLink) {
+                $providerPostId  = $parser->getProviderIdFromUrl($postLink);
+                if ($this->rawPostRepository->postExists($provider, $providerPostId)) {
+                    $this->logger->info(sprintf("Skipping post: %s as it's already saved.", $providerPostId));
+
+                    continue;
+                }
+
                 $websiteContents = $this->crawler->getHtmlContents($postLink);
-                $providerPostId  = $parser->getProviderIdForPost($websiteContents);
 
                 try {
                     $this->unparsedPostPersister->persistRawPostContents($provider, $websiteContents, $providerPostId);
@@ -75,25 +92,25 @@ class CrawlController
 
                 $persistedCount++;
 
-                $postItem = $parser->parsePost($websiteContents);
-                $postItem->setProviderId($providerPostId);
-                $postItem->setImages(
-                    array_merge([$parser->getPostMainImageUrl($websiteContents)],
-                    $parser->getPostGalleryImageUrls($websiteContents))
-                );
-                $postItems[] = $postItem;
+                //$postItem = $parser->parsePost($websiteContents);
+                //$postItem->setProviderId($providerPostId);
+                //$postItem->setImages(
+                //    array_merge([$parser->getPostMainImageUrl($websiteContents)],
+                //    $parser->getPostGalleryImageUrls($websiteContents))
+                //);
+                //$postItems[] = $postItem;
 
                 //$this->postRepository->persist($postItem);
 
                 // stop after 1
-                if ($i++ > 4) {
-                    break 2;
-                }
+                //if (++$i > 0) {
+                //    break 2;
+                //}
             }
         }
 
-//        return new Response("<pre>Persisted " . $persistedCount . " posts.</pre>");
-        return new Response("<pre>" . print_r($postItems, true) . "</pre>");
+        return new Response("<pre>Persisted " . $persistedCount . " posts.</pre>");
+        //return new Response("<pre>" . print_r($postItems, true) . "</pre>");
     }
 
     /**

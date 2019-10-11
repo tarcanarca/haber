@@ -45,10 +45,29 @@ class WebsiteCrawler implements Crawler
 
     public function getHtmlContents(string $url): WebsiteContents
     {
-        return new WebsiteContents(
-            $url,
-            $this->getDomCrawler($url)->html()
-        );
+        $crawler = $this->getDomCrawler($url);
+
+        $crawler->filter('script, noscript, style, embed, input, iframe, form, area')->each(function (DomCrawler $crawler) {
+            foreach ($crawler as $node) {
+                $node->parentNode->removeChild($node);
+            }
+        });
+
+        $crawler->filterXPath('comment()')->each(function (DomCrawler $crawler) {
+            foreach ($crawler as $node) {
+                $node->parentNode->removeChild($node);
+            }
+        });
+
+        $crawler->filter('[style]')->each(function (DomCrawler $crawler) {
+            foreach ($crawler as $node) {
+                $node->attributes->getNamedItem('style')->nodeValue = '';
+            }
+        });
+
+        $htmlContents = $crawler->html();
+
+        return new WebsiteContents($url, $htmlContents);
     }
 
     public function fetchPostLinksFromProvider(NewsProvider $provider, NewsProviderCategory ...$categoriesToFetch): array
