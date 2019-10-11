@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
+use App\Repository\RawPostRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints\DateTime;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RawPostRepository")
@@ -62,6 +64,18 @@ class RawPost
      * @ORM\Column(type="bit")
      */
     private $processed = false;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(type="datetime")
+     */
+    private $createdAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new DateTime();
+    }
 
     public function getId(): int
     {
@@ -140,5 +154,23 @@ class RawPost
     public function setProcessed(bool $processed): void
     {
         $this->processed = $processed;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCreatedAt(): \DateTime
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * @param \DateTime $createdAt
+     */
+    public function setCreatedAt(\DateTime $createdAt): RawPost
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
     }
 }

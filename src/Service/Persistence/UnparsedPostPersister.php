@@ -52,7 +52,8 @@ class UnparsedPostPersister
         $unparsedPost->setProvider($provider)
             ->setContents($contents->getHtmlContents())
             ->setUrl($contents->getUrl())
-            ->setProviderKey($providerKey);
+            ->setProviderKey($providerKey)
+            ->setCreatedAt(new \DateTime('now', new \DateTimeZone('UTC')));
 
         $this->entityManager->persist($unparsedPost);
         $this->entityManager->flush($unparsedPost);
