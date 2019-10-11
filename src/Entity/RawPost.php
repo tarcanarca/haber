@@ -125,4 +125,20 @@ class RawPost
 
         return $this;
     }
+
+    /**
+     * @return bool
+     */
+    public function isProcessed(): bool
+    {
+        return $this->processed;
+    }
+
+    /**
+     * @param bool $processed
+     */
+    public function setProcessed(bool $processed): void
+    {
+        $this->processed = $processed;
+    }
 }
