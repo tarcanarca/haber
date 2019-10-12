@@ -65,9 +65,10 @@ class CrawlCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $io = new SymfonyStyle($input, $output);
+        $start = microtime(true);
 
-        $persistedCount = 0;
+        $io = new SymfonyStyle($input, $output);
+        $io->title((new \DateTime())->format('Y-m-d H:i:s'));
 
         /** @var NewsProvider $provider */
         foreach ($this->providerRepository->findAll() as $provider) {
@@ -93,10 +94,10 @@ class CrawlCommand extends Command
                 continue;
             }
 
-            $io->title(sprintf("Fetching %d new posts...", count($postLinks)));
-
+            $io->writeln(sprintf("Fetching %d new posts...", count($postLinks)));
             $io->progressStart(count($postLinks));
 
+            $persistedCount = 0;
             foreach ($postLinks as $postLink) {
                 $providerPostId  = $parser->getProviderIdFromUrl($postLink);
                 $websiteContents = $this->crawler->getHtmlContents($postLink);
@@ -114,6 +115,11 @@ class CrawlCommand extends Command
             }
 
             $io->progressFinish();
+
+            $io->success(sprintf("Saved %d posts", $persistedCount));
         }
+
+        $duration = microtime(true) - $start;
+        $io->writeln(sprintf("Crawl completed in %.2f seconds", $duration));
     }
 }

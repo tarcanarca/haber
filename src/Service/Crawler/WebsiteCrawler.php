@@ -3,12 +3,9 @@
 namespace App\Service\Crawler;
 
 use App\Entity\NewsProvider;
-use App\Entity\NewsProviderCategory;
 use App\Service\Crawler\Strategy\StrategyFactory;
 use App\ValueObject\WebsiteContents;
-use Doctrine\Common\Collections\Collection;
 use GuzzleHttp\Client;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
 use Symfony\Component\DomCrawler\Link;
 
@@ -30,18 +27,11 @@ class WebsiteCrawler implements Crawler
      */
     private $strategyFactory;
 
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private $logger;
-
     public function __construct(
-        StrategyFactory $strategyFactory,
-        LoggerInterface $logger
+        StrategyFactory $strategyFactory
     ) {
         $this->httpClient      = new Client();
         $this->strategyFactory = $strategyFactory;
-        $this->logger          = $logger;
     }
 
     public function getHtmlContents(string $url): WebsiteContents
@@ -81,17 +71,7 @@ class WebsiteCrawler implements Crawler
 
         $postLinks = [];
 
-        $this->logger->notice(sprintf(
-            "Crawling: %s (%s) - %d categories: %s",
-            $provider->getName(),
-            $provider->getUrl(),
-            $categoriesToFetch->count(),
-            implode(", ", $categoriesToFetch->getValues())
-        ));
-
         foreach ($categoriesToFetch as $providerCategory) {
-            //$this->logger->info("Category: " . $providerCategory);
-
             $fetchedLinks = $this->fetchInternalLinksOn(
                 implode('/', [$provider->getUrl(), $providerCategory->getPath()])
             );
@@ -103,18 +83,10 @@ class WebsiteCrawler implements Crawler
                 }
             );
 
-            //$this->logger->info(sprintf("%d post links fetched.", count($fetchedPostLinks)));
-
             $postLinks = array_merge($postLinks, $fetchedPostLinks);
         }
 
         $postLinks = array_unique($postLinks);
-
-        $this->logger->info(sprintf(
-            "%d post links fetched for %d categories.",
-            count($postLinks),
-            count($categoriesToFetch)
-        ));
 
         return $postLinks;
     }
