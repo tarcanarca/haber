@@ -58,11 +58,6 @@ class CrawlCommand extends Command
         parent::__construct();
     }
 
-    protected function configure()
-    {
-        //
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $start = microtime(true);
@@ -85,7 +80,7 @@ class CrawlCommand extends Command
             $postLinks = array_filter($postLinks, function ($postLink) use ($parser, $provider) {
                 $providerPostId = $parser->getProviderIdFromUrl($postLink);
 
-                return false ===$this->rawPostRepository->postExists($provider, $providerPostId);
+                return false === $this->rawPostRepository->postExists($provider, $providerPostId);
             });
 
             if (empty($postLinks)) {
@@ -98,9 +93,8 @@ class CrawlCommand extends Command
             $io->progressStart(count($postLinks));
 
             $persistedCount = 0;
-            foreach ($postLinks as $postLink) {
-                $providerPostId  = $parser->getProviderIdFromUrl($postLink);
-                $websiteContents = $this->crawler->getHtmlContents($postLink);
+            foreach ($this->crawler->getHtmlContentsConcurrently($postLinks) as $websiteContents) {
+                $providerPostId = $parser->getProviderIdFromUrl($websiteContents->getUrl());
 
                 try {
                     $this->unparsedPostPersister->persistRawPostContents($provider, $websiteContents, $providerPostId);

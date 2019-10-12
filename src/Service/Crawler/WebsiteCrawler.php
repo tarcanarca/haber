@@ -37,10 +37,38 @@ class WebsiteCrawler implements Crawler
         $this->strategyFactory = $strategyFactory;
     }
 
-    public function getHtmlContents(string $url): WebsiteContents
+    /**
+     * @param string[] $urls
+     *
+     * @return WebsiteContents[]
+     *
+     * @throws \App\Service\Crawler\Exception\CrawlException
+     */
+    public function getHtmlContentsConcurrently(array $urls): array
     {
-        $crawler = $this->getDomCrawler($url);
+        foreach ($urls as $url) {
+            $promises[$url] = $this->httpClient->getAsync($url, self::GUZZLE_DEFAULT_OPTIONS);
+        }
 
+        try {
+            $results = Promise\unwrap($promises);
+        } catch (ConnectException $exception) {
+            throw CrawlException::cannotLoadCategoryPages($exception);
+        }
+
+        $contents = [];
+        foreach ($results as $url => $response) {
+            $domCrawler   = new DomCrawler((string)$response->getBody(), $url);
+            $htmlContents = $this->getTrimmedContents($domCrawler)->html();
+
+            $contents[] = new WebsiteContents($url, $htmlContents);
+        }
+
+        return $contents;
+    }
+
+    private function getTrimmedContents(DomCrawler $crawler): DomCrawler
+    {
         $crawler->filter('script, noscript, style, embed, input, iframe, form, area')->each(function (DomCrawler $crawler) {
             foreach ($crawler as $node) {
                 $node->parentNode->removeChild($node);
@@ -59,9 +87,7 @@ class WebsiteCrawler implements Crawler
             }
         });
 
-        $htmlContents = $crawler->html();
-
-        return new WebsiteContents($url, $htmlContents);
+        return $crawler;
     }
 
     /**
@@ -91,6 +117,7 @@ class WebsiteCrawler implements Crawler
         } catch (ConnectException $exception) {
             throw CrawlException::cannotLoadCategoryPages($exception);
         }
+
         /**
          * @var $categoryAndUrl string
          * @var $response       \Psr\Http\Message\ResponseInterface

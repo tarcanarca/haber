@@ -82,7 +82,7 @@ class CrawlController
                     continue;
                 }
 
-                $websiteContents = $this->crawler->getHtmlContents($postLink);
+                list($websiteContents) = $this->crawler->getHtmlContentsConcurrently([$postLink]);
 
                 try {
                     $this->unparsedPostPersister->persistRawPostContents($provider, $websiteContents, $providerPostId);
