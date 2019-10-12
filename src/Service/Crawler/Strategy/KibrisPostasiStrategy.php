@@ -2,13 +2,11 @@
 
 namespace App\Service\Crawler\Strategy;
 
-use App\Entity\NewsProviderCategory;
-
 class KibrisPostasiStrategy implements CrawlerStrategy
 {
-    public function isHyperlinkToCategoryPost(string $hyperlink, NewsProviderCategory $category): bool
+    public function isHyperlinkToCategoryPost(string $hyperlink, string $categoryPath): bool
     {
-        $searchLinkPattern = sprintf('/\/%s\/n[0-9]{6,}-/', $category->getPath());
+        $searchLinkPattern = sprintf('/\/%s\/n[0-9]{6,}-/', $categoryPath);
 
         return preg_match($searchLinkPattern, $hyperlink) === 1;
     }

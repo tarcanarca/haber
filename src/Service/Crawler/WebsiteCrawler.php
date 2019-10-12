@@ -3,9 +3,12 @@
 namespace App\Service\Crawler;
 
 use App\Entity\NewsProvider;
+use App\Service\Crawler\Exception\CrawlException;
 use App\Service\Crawler\Strategy\StrategyFactory;
 use App\ValueObject\WebsiteContents;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Promise;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
 use Symfony\Component\DomCrawler\Link;
 
@@ -61,6 +64,9 @@ class WebsiteCrawler implements Crawler
         return new WebsiteContents($url, $htmlContents);
     }
 
+    /**
+     * @throws \App\Service\Crawler\Exception\CrawlException
+     */
     public function fetchPostLinksFromProvider(NewsProvider $provider, iterable $categoriesToFetch): array
     {
         $categoriesToFetch = empty($categoriesToFetch)
@@ -71,15 +77,35 @@ class WebsiteCrawler implements Crawler
 
         $postLinks = [];
 
+        $promises = [];
         foreach ($categoriesToFetch as $providerCategory) {
-            $fetchedLinks = $this->fetchInternalLinksOn(
-                implode('/', [$provider->getUrl(), $providerCategory->getPath()])
-            );
+            $categoryPageUrl = implode('/', [$provider->getUrl(), $providerCategory->getPath()]);
+            $categoryPath    = $providerCategory->getPath();
+
+            $promises[$categoryPath . ' ' . $categoryPageUrl]
+                = $this->httpClient->getAsync($categoryPageUrl, self::GUZZLE_DEFAULT_OPTIONS);
+        }
+
+        try {
+            $results = Promise\unwrap($promises);
+        } catch (ConnectException $exception) {
+            throw CrawlException::cannotLoadCategoryPages($exception);
+        }
+        /**
+         * @var $categoryAndUrl string
+         * @var $response       \Psr\Http\Message\ResponseInterface
+         */
+        foreach ($results as $categoryAndUrl => $response) {
+            list($categoryPath, $url) = explode(' ', $categoryAndUrl);
+
+            $domCrawler = new DomCrawler((string)$response->getBody(), $url);
+
+            $fetchedLinks =$this->fetchInternalLinksOn($domCrawler);
 
             $fetchedPostLinks = array_filter(
                 $fetchedLinks,
-                function ($internalLink) use ($crawlerStrategy, $providerCategory) {
-                    return $crawlerStrategy->isHyperlinkToCategoryPost($internalLink, $providerCategory);
+                function ($internalLink) use ($crawlerStrategy, $categoryPath) {
+                    return $crawlerStrategy->isHyperlinkToCategoryPost($internalLink, $categoryPath);
                 }
             );
 
@@ -91,10 +117,10 @@ class WebsiteCrawler implements Crawler
         return $postLinks;
     }
 
-    private function fetchInternalLinksOn(string $url): array
+    private function fetchInternalLinksOn(DomCrawler $domCrawler): array
     {
-        $domCrawler = $this->getDomCrawler($url);
         $hyperlinks = $domCrawler->filter('a')->links();
+        $url        = $domCrawler->getUri();
 
         $hyperlinks = array_map(function (Link $link) {
             return $link->getUri();
@@ -103,8 +129,7 @@ class WebsiteCrawler implements Crawler
         $hyperlinks = array_filter(
             $hyperlinks,
             function ($link) use ($url) {
-                $host = parse_url($url)["host"];
-
+                $host        = parse_url($url)["host"];
                 $parsed_link = parse_url($link);
 
                 if (!isset($parsed_link["host"])) {

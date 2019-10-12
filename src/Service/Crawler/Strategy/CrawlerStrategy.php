@@ -2,9 +2,7 @@
 
 namespace App\Service\Crawler\Strategy;
 
-use App\Entity\NewsProviderCategory;
-
 interface CrawlerStrategy
 {
-    public function isHyperlinkToCategoryPost(string $hyperlink, NewsProviderCategory $category): bool;
+    public function isHyperlinkToCategoryPost(string $hyperlink, string $categoryPath): bool;
 }
