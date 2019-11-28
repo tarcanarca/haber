@@ -169,12 +169,4 @@ class WebsiteCrawler implements Crawler
 
         return $hyperlinks;
     }
-
-    private function getDomCrawler(string $url): DomCrawler
-    {
-        $response   = $this->httpClient->get($url, self::GUZZLE_DEFAULT_OPTIONS);
-        $domCrawler = new DomCrawler((string)$response->getBody(), $url);
-
-        return $domCrawler;
-    }
 }

@@ -72,7 +72,7 @@ class CrawlController
         foreach ($this->providerRepository->findAll() as $provider) {
             $parser = $this->postItemParserFactory->getParserFor($provider);
 
-            $postLinks = $this->crawler->fetchPostLinksFromProvider($provider);
+            $postLinks = $this->crawler->fetchPostLinksFromProvider($provider, $provider->getCategories());
 
             foreach ($postLinks as $postLink) {
                 $providerPostId  = $parser->getProviderIdFromUrl($postLink);
