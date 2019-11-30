@@ -12,6 +12,8 @@
         "guzzlehttp/guzzle": "^6.3",
         "league/url": "^3.3",
         "myclabs/php-enum": "^1.7",
+        "php-http/guzzle6-adapter": "^2.0",
+        "psr/http-client": "^1.0",
         "sensio/framework-extra-bundle": "^5.1",
         "symfony/asset": "4.3.*",
         "symfony/console": "4.3.*",

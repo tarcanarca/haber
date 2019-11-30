@@ -68,7 +68,7 @@ class Kernel extends BaseKernel
         $em = $this->getContainer()->get('doctrine.orm.default_entity_manager');
 
         $platform = $em->getConnection()->getDatabasePlatform();
-        $platform->registerDoctrineTypeMapping('VARCHAR', Category::class);
+//        $platform->registerDoctrineTypeMapping('VARCHAR', Category::class);
         $platform->registerDoctrineTypeMapping('VARCHAR', ProviderType::class);
         $platform->registerDoctrineTypeMapping('BIT', "bit");
 

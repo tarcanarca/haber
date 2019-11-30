@@ -25,3 +25,14 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    Http\Adapter\Guzzle6\Client:
+        factory:   ['Http\Adapter\Guzzle6\Client', createWithConfig]
+        arguments:
+            - curl:
+                84: 1
+
+    Psr\Http\Client\ClientInterface: '@Http\Adapter\Guzzle6\Client'
+
+    # replace this with PSR interface when Promises PSR is accepted
+    Http\Client\HttpAsyncClient: '@Http\Adapter\Guzzle6\Client'

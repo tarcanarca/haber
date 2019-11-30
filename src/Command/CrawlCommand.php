@@ -4,7 +4,7 @@ namespace App\Command;
 
 use App\Entity\NewsProvider;
 use App\Entity\RawPost;
-use App\Service\Crawler\WebsiteCrawler;
+use App\Service\Crawler\Crawler;
 use App\Service\Parser\ParserFactory;
 use App\Service\Persistence\DuplicateException;
 use App\Service\Persistence\UnparsedPostPersister;
@@ -19,7 +19,7 @@ class CrawlCommand extends Command
     protected static $defaultName = 'app:crawl';
 
     /**
-     * @var \App\Service\Crawler\WebsiteCrawler
+     * @var \App\Service\Crawler\Crawler
      */
     private $crawler;
 
@@ -44,7 +44,7 @@ class CrawlCommand extends Command
     private $rawPostRepository;
 
     public function __construct(
-        WebsiteCrawler $crawler,
+        Crawler $crawler,
         ParserFactory $postItemParserFactory,
         UnparsedPostPersister $unparsedPostPersister,
         EntityManagerInterface $entityManager

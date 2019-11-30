@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\NewsProvider;
 use App\Entity\NewsProviderCategory;
 use App\Entity\RawPost;
-use App\Service\Crawler\WebsiteCrawler;
+use App\Service\Crawler\Crawler;
 use App\Service\Parser\ParserFactory;
 use App\Service\Persistence\DuplicateException;
 use App\Service\Persistence\UnparsedPostPersister;
@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 class CrawlController
 {
     /**
-     * @var \App\Service\Crawler\WebsiteCrawler
+     * @var \App\Service\Crawler\Crawler
      */
     private $crawler;
 
@@ -49,7 +49,7 @@ class CrawlController
     private $logger;
 
     public function __construct(
-        WebsiteCrawler $crawler,
+        Crawler $crawler,
         ParserFactory $postItemParserFactory,
         UnparsedPostPersister $unparsedPostPersister,
         EntityManagerInterface $entityManager,
@@ -65,7 +65,6 @@ class CrawlController
 
     public function index(): Response
     {
-        $i = 0;
         $persistedCount = 0;
 
         /** @var NewsProvider $provider */
@@ -91,26 +90,10 @@ class CrawlController
                 }
 
                 $persistedCount++;
-
-                //$postItem = $parser->parsePost($websiteContents);
-                //$postItem->setProviderId($providerPostId);
-                //$postItem->setImages(
-                //    array_merge([$parser->getPostMainImageUrl($websiteContents)],
-                //    $parser->getPostGalleryImageUrls($websiteContents))
-                //);
-                //$postItems[] = $postItem;
-
-                //$this->postRepository->persist($postItem);
-
-                // stop after 1
-                //if (++$i > 0) {
-                //    break 2;
-                //}
             }
         }
 
         return new Response("<pre>Persisted " . $persistedCount . " posts.</pre>");
-        //return new Response("<pre>" . print_r($postItems, true) . "</pre>");
     }
 
     /**

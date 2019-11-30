@@ -6,22 +6,17 @@ use App\Entity\NewsProvider;
 use App\Service\Crawler\Exception\CrawlException;
 use App\Service\Crawler\Strategy\StrategyFactory;
 use App\ValueObject\WebsiteContents;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Promise;
+use GuzzleHttp\Psr7\Request;
+use Http\Client\HttpAsyncClient;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
 use Symfony\Component\DomCrawler\Link;
 
-class WebsiteCrawler implements Crawler
+class AsyncCrawler implements Crawler
 {
-    private const GUZZLE_DEFAULT_OPTIONS = [
-        'curl' => [
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0,
-        ],
-    ];
-
     /**
-     * @var \GuzzleHttp\Client
+     * @var \Http\Client\HttpAsyncClient
      */
     private $httpClient;
 
@@ -31,14 +26,15 @@ class WebsiteCrawler implements Crawler
     private $strategyFactory;
 
     public function __construct(
+        HttpAsyncClient $httpClient,
         StrategyFactory $strategyFactory
     ) {
-        $this->httpClient      = new Client();
+        $this->httpClient      = $httpClient;
         $this->strategyFactory = $strategyFactory;
     }
 
     /**
-     * @param string[] $urls
+     * @param \Psr\Http\Message\UriInterface[] $urls
      *
      * @return WebsiteContents[]
      *
@@ -47,7 +43,7 @@ class WebsiteCrawler implements Crawler
     public function getHtmlContentsConcurrently(array $urls): array
     {
         foreach ($urls as $url) {
-            $promises[$url] = $this->httpClient->getAsync($url, self::GUZZLE_DEFAULT_OPTIONS);
+            $promises[$url] = $this->httpClient->sendAsyncRequest(new Request("GET", $url));
         }
 
         try {
@@ -109,7 +105,7 @@ class WebsiteCrawler implements Crawler
             $categoryPath    = $providerCategory->getPath();
 
             $promises[$categoryPath . ' ' . $categoryPageUrl]
-                = $this->httpClient->getAsync($categoryPageUrl, self::GUZZLE_DEFAULT_OPTIONS);
+                = $this->httpClient->sendAsyncRequest(new Request("GET", $categoryPageUrl));
         }
 
         try {
