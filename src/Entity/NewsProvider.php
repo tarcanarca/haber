@@ -86,4 +86,9 @@ class NewsProvider
     {
         return new Url($this->url);
     }
+
+    public function __toString(): string
+    {
+        return $this->getName();
+    }
 }

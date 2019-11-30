@@ -55,7 +55,13 @@ class AsyncCrawler implements Crawler
         $contents = [];
         foreach ($results as $url => $response) {
             $domCrawler   = new DomCrawler((string)$response->getBody(), $url);
-            $htmlContents = $this->getTrimmedContents($domCrawler)->html();
+            try {
+                $htmlContents = $this->getTrimmedContents($domCrawler)->html();
+            } catch (\InvalidArgumentException $e) {
+                // Invalid result, not HTML?
+                // @todo: Cover this case
+                continue;
+            }
 
             $contents[] = new WebsiteContents($url, $htmlContents);
         }
@@ -101,7 +107,7 @@ class AsyncCrawler implements Crawler
 
         $promises = [];
         foreach ($categoriesToFetch as $providerCategory) {
-            $categoryPageUrl = implode('/', [$provider->getUrl(), $providerCategory->getPath()]);
+            $categoryPageUrl = implode('', [$provider->getUrl(), $providerCategory->getPath()]) . '/';
             $categoryPath    = $providerCategory->getPath();
 
             $promises[$categoryPath . ' ' . $categoryPageUrl]

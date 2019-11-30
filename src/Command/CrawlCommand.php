@@ -3,11 +3,13 @@
 namespace App\Command;
 
 use App\Entity\NewsProvider;
+use App\Entity\NewsProviderCategory;
 use App\Entity\RawPost;
 use App\Service\Crawler\Crawler;
 use App\Service\Parser\ParserFactory;
 use App\Service\Persistence\DuplicateException;
 use App\Service\Persistence\UnparsedPostPersister;
+use App\ValueObject\WebsiteContents;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,6 +45,11 @@ class CrawlCommand extends Command
      */
     private $rawPostRepository;
 
+    /**
+     * @var SymfonyStyle
+     */
+    private $io;
+
     public function __construct(
         Crawler $crawler,
         ParserFactory $postItemParserFactory,
@@ -52,6 +59,8 @@ class CrawlCommand extends Command
         $this->crawler               = $crawler;
         $this->postItemParserFactory = $postItemParserFactory;
         $this->unparsedPostPersister = $unparsedPostPersister;
+
+        // configure service factory methods for these in services.yaml
         $this->providerRepository    = $entityManager->getRepository(NewsProvider::class);
         $this->rawPostRepository     = $entityManager->getRepository(RawPost::class);
 
@@ -62,35 +71,30 @@ class CrawlCommand extends Command
     {
         $start = microtime(true);
 
-        $io = new SymfonyStyle($input, $output);
-        $io->title((new \DateTime())->format('Y-m-d H:i:s'));
+        $this->io = new SymfonyStyle($input, $output);
+        $this->io->title((new \DateTime())->format('Y-m-d H:i:s'));
 
         /** @var NewsProvider $provider */
         foreach ($this->providerRepository->findAll() as $provider) {
+            $parser     = $this->postItemParserFactory->getParserFor($provider);
             $categories = $provider->getCategories();
-            $io->section(sprintf(
+
+            $this->io->section(sprintf(
                 "Scanning new posts in %d categories from: %s",
                 $categories->count(),
                 $provider->getName()
             ));
 
-            $parser    = $this->postItemParserFactory->getParserFor($provider);
-            $postLinks = $this->crawler->fetchPostLinksFromProvider($provider, $categories);
-
-            $postLinks = array_filter($postLinks, function ($postLink) use ($parser, $provider) {
-                $providerPostId = $parser->getProviderIdFromUrl($postLink);
-
-                return false === $this->rawPostRepository->postExists($provider, $providerPostId);
-            });
+            $postLinks = $this->fetchNewPostsFrom($provider, $categories);
 
             if (empty($postLinks)) {
-                $io->text("No new posts found");
+                $this->io->text("No new posts found");
 
                 continue;
             }
 
-            $io->writeln(sprintf("Fetching %d new posts...", count($postLinks)));
-            $io->progressStart(count($postLinks));
+            $this->io->writeln(sprintf("Fetching %d new posts...", count($postLinks)));
+            $this->io->progressStart(count($postLinks));
 
             $persistedCount = 0;
             foreach ($this->crawler->getHtmlContentsConcurrently($postLinks) as $websiteContents) {
@@ -99,21 +103,52 @@ class CrawlCommand extends Command
                 try {
                     $this->unparsedPostPersister->persistRawPostContents($provider, $websiteContents, $providerPostId);
                 } catch (DuplicateException $exception) {
-                    $io->error("Attempted to save a duplicate post: " . $exception->getMessage());
+                    $this->io->error("Attempted to save a duplicate post: " . $exception->getMessage());
 
                     continue;
                 }
 
-                $io->progressAdvance();
+                $this->io->progressAdvance();
                 $persistedCount++;
             }
 
-            $io->progressFinish();
+            $this->io->progressFinish();
 
-            $io->success(sprintf("Saved %d posts", $persistedCount));
+            $this->io->success(sprintf("Saved %d posts", $persistedCount));
         }
 
         $duration = microtime(true) - $start;
-        $io->writeln(sprintf("Crawl completed in %.2f seconds", $duration));
+        $this->io->writeln(sprintf("Crawl completed in %.2f seconds", $duration));
+    }
+
+    /**
+     * @param NewsProvider           $provider
+     * @param NewsProviderCategory[] $categories
+     *
+     * @return WebsiteContents[]
+     */
+    private function fetchNewPostsFrom(NewsProvider $provider, iterable $categories): array
+    {
+        $parser    = $this->postItemParserFactory->getParserFor($provider);
+        $postLinks = $this->crawler->fetchPostLinksFromProvider($provider, $categories);
+
+        $this->io->writeln(sprintf("Fetched links from %s: %s", $provider, print_r($postLinks, true)), SymfonyStyle::VERBOSITY_DEBUG);
+
+        $postLinks = array_filter(
+            $postLinks,
+            function ($postLink) use ($parser, $provider) {
+                $providerPostId = $parser->getProviderIdFromUrl($postLink);
+
+                $postIsNew = (false === $this->rawPostRepository->postExists($provider, $providerPostId));
+
+                if (!$postIsNew) {
+                    $this->io->writeln(sprintf("Ignoring existing post: %s (of: %s)", $providerPostId, $provider), SymfonyStyle::VERBOSITY_DEBUG);
+                }
+
+                return $postIsNew;
+            }
+        );
+
+        return $postLinks;
     }
 }
