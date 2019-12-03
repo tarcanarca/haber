@@ -7,7 +7,7 @@ use App\Entity\NewsProviderCategory;
 use App\Entity\RawPost;
 use App\Service\Crawler\Crawler;
 use App\Service\Parser\ParserFactory;
-use App\Service\Persistence\DuplicateException;
+use App\Service\Persistence\Exception\DuplicateException;
 use App\Service\Persistence\UnparsedPostPersister;
 use App\Types\Category;
 use App\Types\ProviderType;
@@ -66,7 +66,7 @@ class CrawlController
     public function index(): Response
     {
         die("Use command: bin/console a:c");
-        
+
         $persistedCount = 0;
 
         /** @var NewsProvider $provider */

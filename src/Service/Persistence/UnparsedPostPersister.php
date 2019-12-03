@@ -4,8 +4,10 @@ namespace App\Service\Persistence;
 
 use App\Entity\NewsProvider;
 use App\Entity\RawPost;
+use App\Service\Persistence\Exception\DuplicateException;
 use App\ValueObject\WebsiteContents;
 use Doctrine\ORM\EntityManagerInterface;
+
 
 class UnparsedPostPersister
 {
@@ -26,7 +28,7 @@ class UnparsedPostPersister
     }
 
     /**
-     * @throws \App\Service\Persistence\DuplicateException
+     * @throws \App\Service\Persistence\Exception\DuplicateException
      */
     public function persistRawPostContents(
         NewsProvider $provider,

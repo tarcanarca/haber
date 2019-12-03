@@ -7,7 +7,7 @@ use App\Entity\NewsProviderCategory;
 use App\Entity\RawPost;
 use App\Service\Crawler\Crawler;
 use App\Service\Parser\ParserFactory;
-use App\Service\Persistence\DuplicateException;
+use App\Service\Persistence\Exception\DuplicateException;
 use App\Service\Persistence\UnparsedPostPersister;
 use App\ValueObject\WebsiteContents;
 use Doctrine\ORM\EntityManagerInterface;

@@ -55,7 +55,7 @@ class AsyncCrawler implements Crawler
         $contents = [];
         foreach ($results as $url => $response) {
             $domCrawler = new DomCrawler((string)$response->getBody(), $url);
-
+            
             try {
                 $htmlContents = $this->getTrimmedContents($domCrawler)->html();
             } catch (\InvalidArgumentException $e) {
@@ -131,7 +131,9 @@ class AsyncCrawler implements Crawler
         foreach ($results as $categoryAndUrl => $response) {
             list($categoryPath, $url) = explode(' ', $categoryAndUrl);
 
-            $fetchedLinks = $this->fetchInternalLinksOn($response);
+            $domCrawler = new DomCrawler((string)$response->getBody(), $url);
+
+            $fetchedLinks = $this->fetchInternalLinksOn($domCrawler);
 
             $fetchedPostLinks = array_filter(
                 $fetchedLinks,
