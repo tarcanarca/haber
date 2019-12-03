@@ -30,7 +30,7 @@ services:
         factory:   ['Http\Adapter\Guzzle6\Client', createWithConfig]
         arguments:
             - curl:
-                84: 1
+                !php/const CURLOPT_HTTP_VERSION: !php/const CURL_HTTP_VERSION_1_0
 
     Psr\Http\Client\ClientInterface: '@Http\Adapter\Guzzle6\Client'
 
