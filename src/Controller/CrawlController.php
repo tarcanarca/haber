@@ -65,6 +65,8 @@ class CrawlController
 
     public function index(): Response
     {
+        die("Use command: bin/console a:c");
+        
         $persistedCount = 0;
 
         /** @var NewsProvider $provider */
@@ -94,28 +96,5 @@ class CrawlController
         }
 
         return new Response("<pre>Persisted " . $persistedCount . " posts.</pre>");
-    }
-
-    /**
-     * @return \App\Entity\NewsProvider[]
-     */
-    private function getProvidersToCrawl(): array
-    {
-        return [
-            (new NewsProvider(ProviderType::KIBRIS_POSTASI(), "Kibris Postasi", "http://www.kibrispostasi.com"))
-                ->setCategories(new ArrayCollection([
-                    new NewsProviderCategory(Category::KIBRIS(), "c35-KIBRIS_HABERLERI"),
-                ])),
-            (new NewsProvider(ProviderType::TE_BILISIM(), "Gundem Kibris", "http://www.gundemkibris.com"))
-                ->setCategories(new ArrayCollection([
-                    new NewsProviderCategory(Category::KIBRIS(), "kibris"),
-                    new NewsProviderCategory(Category::DUNYA(), "dunya"),
-                ])),
-            (new NewsProvider(ProviderType::CM_HABER(), "Detay Kibris", "http://www.detaykibris.com"))
-                ->setCategories(new ArrayCollection([
-                    new NewsProviderCategory(Category::DUNYA(), "dunya-haberleri-45hk.htm"),
-                    new NewsProviderCategory(Category::KIBRIS(), "kibris-haberleri-7hk.htm"),
-                ])),
-        ];
     }
 }

@@ -54,7 +54,8 @@ class AsyncCrawler implements Crawler
 
         $contents = [];
         foreach ($results as $url => $response) {
-            $domCrawler   = new DomCrawler((string)$response->getBody(), $url);
+            $domCrawler = new DomCrawler((string)$response->getBody(), $url);
+
             try {
                 $htmlContents = $this->getTrimmedContents($domCrawler)->html();
             } catch (\InvalidArgumentException $e) {
@@ -103,11 +104,9 @@ class AsyncCrawler implements Crawler
 
         $crawlerStrategy = $this->strategyFactory->getStrategyFor($provider);
 
-        $postLinks = [];
-
-        $promises = [];
+        $postLinks = $promises = [];
         foreach ($categoriesToFetch as $providerCategory) {
-            $categoryPageUrl = implode('', [$provider->getUrl(), $providerCategory->getPath()]) . '/';
+            $categoryPageUrl = implode('', [$provider->getUrl(), $providerCategory->getPath()]);
             $categoryPath    = $providerCategory->getPath();
 
             $promises[$categoryPath . ' ' . $categoryPageUrl]
@@ -115,6 +114,11 @@ class AsyncCrawler implements Crawler
         }
 
         try {
+            /**
+             * Wait until all requests are completed.
+             *
+             * @todo: Keep iterating through promises and process right after one is fulfilled.
+             */
             $results = Promise\unwrap($promises);
         } catch (ConnectException $exception) {
             throw CrawlException::cannotLoadCategoryPages($exception);
@@ -127,9 +131,7 @@ class AsyncCrawler implements Crawler
         foreach ($results as $categoryAndUrl => $response) {
             list($categoryPath, $url) = explode(' ', $categoryAndUrl);
 
-            $domCrawler = new DomCrawler((string)$response->getBody(), $url);
-
-            $fetchedLinks = $this->fetchInternalLinksOn($domCrawler);
+            $fetchedLinks = $this->fetchInternalLinksOn($response);
 
             $fetchedPostLinks = array_filter(
                 $fetchedLinks,
@@ -141,9 +143,7 @@ class AsyncCrawler implements Crawler
             $postLinks = array_merge($postLinks, $fetchedPostLinks);
         }
 
-        $postLinks = array_unique($postLinks);
-
-        return $postLinks;
+        return array_unique($postLinks);
     }
 
     private function fetchInternalLinksOn(DomCrawler $domCrawler): array
