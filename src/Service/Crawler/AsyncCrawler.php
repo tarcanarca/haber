@@ -129,7 +129,7 @@ class AsyncCrawler implements Crawler
 
             $domCrawler = new DomCrawler((string)$response->getBody(), $url);
 
-            $fetchedLinks =$this->fetchInternalLinksOn($domCrawler);
+            $fetchedLinks = $this->fetchInternalLinksOn($domCrawler);
 
             $fetchedPostLinks = array_filter(
                 $fetchedLinks,
