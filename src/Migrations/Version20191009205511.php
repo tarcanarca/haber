@@ -32,11 +32,11 @@ final class Version20191009205511 extends AbstractMigration
                         (4, 'Detay Kibris', 'http://www.detaykibris.com', 'cmhaber');");
 
         $this->addSql("INSERT INTO `newsprovidercategories` (`id`, `newsprovider_id`, `category_key`, `path`) VALUES
-                        (1, 2, 'kibris-haberleri', 'c35-KIBRIS_HABERLERI'),
-                        (2, 3, 'dunya-haberleri', 'dunya'),
-                        (3, 3, 'kibris-haberleri', 'kibris'),
-                        (4, 4, 'dunya-haberleri', 'dunya-haberleri-45hk.htm'),
-                        (5, 4, 'kibris-haberleri', 'kibris-haberleri-7hk.htm');");
+                        (1, 2, 'kibris', 'c35-KIBRIS_HABERLERI'),
+                        (2, 3, 'dunya', 'dunya'),
+                        (3, 3, 'kibris', 'kibris'),
+                        (4, 4, 'dunya', 'dunya-haberleri-45hk.htm'),
+                        (5, 4, 'kibris', 'kibris-haberleri-7hk.htm');");
     }
 
     public function down(Schema $schema) : void

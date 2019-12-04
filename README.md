@@ -15,11 +15,12 @@ After analyzing news, in order to create a link between existing news, tags and 
 First run all migrations (so that test db is created):
 - `bin/console doctrine:migrations:migrate`
 
-Then load fixtures:
-- `bin/console doctrine:fixtures:load`
+Then load fixtures for tests:
+- `bin/console doctrine:fixtures:load --env=test`
 
 Finally, run tests using the Symfony bridge:
 - `bin/phpunit`
 
 
-
+## Running crawler
+- `bin/console app:crawl`
