@@ -36,3 +36,5 @@ services:
 
     # replace this with PSR interface when Promises PSR is accepted
     Http\Client\HttpAsyncClient: '@Http\Adapter\Guzzle6\Client'
+
+    # register ORM repositories

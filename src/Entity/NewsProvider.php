@@ -44,11 +44,8 @@ class NewsProvider
      */
     private $categories;
 
-    public function __construct(ProviderType $type, string $name, string $url)
+    public function __construct()
     {
-        $this->type = $type;
-        $this->name = $name;
-        $this->url = $url;
     }
 
     public function getType(): ProviderType
