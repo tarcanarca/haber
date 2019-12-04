@@ -2,6 +2,9 @@
 
 namespace App\Service\Crawler\Strategy;
 
+/**
+ * CM HABER is a popular news content management system used amongst multiple websites in Cyprus.
+ */
 class CmHaberStrategy implements CrawlerStrategy
 {
     public function isHyperlinkToCategoryPost(string $hyperlink, string $categoryPath): bool
