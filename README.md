@@ -19,7 +19,7 @@ Then load fixtures for tests:
 - `bin/console doctrine:fixtures:load --env=test`
 
 Finally, run tests using the Symfony bridge:
-- `bin/phpunit`
+- `bin/phpunit --testdox`
 
 
 ## Running crawler
