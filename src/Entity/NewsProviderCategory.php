@@ -39,12 +39,6 @@ class NewsProviderCategory
      */
     private $path;
 
-    public function __construct(Category $category, string $path)
-    {
-        $this->category = $category;
-        $this->path = $path;
-    }
-
     /**
      * @return Category
      */
@@ -59,6 +53,27 @@ class NewsProviderCategory
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    public function setCategory(\App\Types\Category $category): NewsProviderCategory
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    public function setPath(string $path): NewsProviderCategory
+    {
+        $this->path = $path;
+
+        return $this;
+    }
+
+    public function setNewsProvider(\App\Entity\NewsProvider $newsProvider): NewsProviderCategory
+    {
+        $this->newsProvider = $newsProvider;
+
+        return $this;
     }
 
     public function __toString()

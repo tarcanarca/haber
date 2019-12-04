@@ -21,6 +21,10 @@ class UnparsedPostPersister
      */
     private $repository;
 
+    /**
+     * @todo: Make this ObjectManager
+     * @todo: Autowire repository
+     */
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;

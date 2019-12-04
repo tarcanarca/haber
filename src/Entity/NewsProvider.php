@@ -44,10 +44,6 @@ class NewsProvider
      */
     private $categories;
 
-    public function __construct()
-    {
-    }
-
     public function getType(): ProviderType
     {
         return $this->type;
@@ -64,7 +60,7 @@ class NewsProvider
     /**
      * @param \App\Entity\NewsProviderCategory[] $categories
      */
-    public function setCategories(Collection $categories): self
+    public function setCategories(iterable $categories): self
     {
         $this->categories = $categories;
 
@@ -74,7 +70,7 @@ class NewsProvider
     /**
      * @return string
      */
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -84,8 +80,29 @@ class NewsProvider
         return new Url($this->url);
     }
 
+    public function setName(string $name)
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function setUrl(string $url)
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    public function setType(\App\Types\ProviderType $type): NewsProvider
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
     public function __toString(): string
     {
-        return $this->getName();
+        return $this->getName() ?? '';
     }
 }

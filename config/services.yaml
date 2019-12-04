@@ -27,6 +27,7 @@ services:
     # please note that last definitions always *replace* previous ones
 
     Http\Adapter\Guzzle6\Client:
+        public: true
         factory:   ['Http\Adapter\Guzzle6\Client', createWithConfig]
         arguments:
             - curl:

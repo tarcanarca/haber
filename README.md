@@ -11,3 +11,15 @@ After analyzing news, in order to create a link between existing news, tags and 
 - proper names
 - references to events
 
+## Testing
+First run all migrations (so that test db is created):
+- `bin/console doctrine:migrations:migrate`
+
+Then load fixtures:
+- `bin/console doctrine:fixtures:load`
+
+Finally, run tests using the Symfony bridge:
+- `bin/phpunit`
+
+
+

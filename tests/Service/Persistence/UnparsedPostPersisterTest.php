@@ -4,12 +4,11 @@
 namespace App\Tests\Service\Persistence;
 
 
+use App\DataFixtures\ProviderFixture;
 use App\Entity\NewsProvider;
 use App\Entity\RawPost;
-use App\Repository\RawPostRepository;
 use App\Service\Persistence\UnparsedPostPersister;
 use App\ValueObject\WebsiteContents;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class UnparsedPostPersisterTest extends WebTestCase
@@ -20,13 +19,9 @@ class UnparsedPostPersisterTest extends WebTestCase
     private $persister;
 
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject|EntityManagerInterface
+     * @var \Doctrine\Common\Persistence\ObjectManager
      */
-    private $entityManagerMock;
-    /**
-     * @var \PHPUnit\Framework\MockObject\MockObject|RawPostRepository
-     */
-    private $repositoryMock;
+    private $objectManager;
 
     protected function setUp()
     {
@@ -36,28 +31,40 @@ class UnparsedPostPersisterTest extends WebTestCase
         $container = self::$container;
 
         // @todo: Create mechanism to mock autowired dependencies automatically.
-        $this->entityManagerMock = $this->getMockBuilder(EntityManagerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
 
-        $this->repositoryMock = $this->getMockBuilder(RawPostRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->entityManagerMock->expects($this->once())
-            ->method('getRepository')
-            ->with(RawPost::class)
-            ->willReturn($this->repositoryMock);
-
-        $this->persister = new UnparsedPostPersister($this->entityManagerMock);
+        $this->objectManager = $container->get('doctrine')->getManager();
+        $this->persister = $container->get(UnparsedPostPersister::class);
     }
 
     public function testRawPostContentsArePersisted()
     {
-        $this->persister->persistRawPostContents(
-            new NewsProvider(),
-            $contents = new WebsiteContents(),
-            "post123"
-        );
+        $this->createAndSaveNewEntity(new WebsiteContents('http://xxx', 'abc'), "post123");
+
+        $repo = $this->objectManager->getRepository(RawPost::class);
+
+        /** @var RawPost $post */
+        $post = $repo->findOneBy([]);
+
+        self::assertInstanceOf(RawPost::class, $post);
+        self::assertSame("post123", $post->getProviderKey());
+    }
+
+    private function createAndSaveNewEntity(WebsiteContents $contents, string $providerKey)
+    {
+        /** @var NewsProvider $provider */
+        $provider = $this->objectManager->getRepository(NewsProvider::class)->findOneBy(['name' => ProviderFixture::TEST_PROVIDER_1]);
+        $this->objectManager->persist($provider);
+
+        $this->persister->persistRawPostContents($provider, $contents, $providerKey);
+    }
+
+    /**
+     * @expectedException \App\Service\Persistence\Exception\DuplicateException
+     */
+    public function testExceptionIsThrownOnDuplicate()
+    {
+        $this->createAndSaveNewEntity(new WebsiteContents('http://xxx', 'abc'), "post123");
+        $this->createAndSaveNewEntity(new WebsiteContents('http://xxx', 'abc22'), "post002");
+        $this->createAndSaveNewEntity(new WebsiteContents('http://xxx', 'Some other'), "post123");
     }
 }

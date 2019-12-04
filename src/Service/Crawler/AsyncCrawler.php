@@ -6,7 +6,6 @@ use App\Entity\NewsProvider;
 use App\Service\Crawler\Exception\CrawlException;
 use App\Service\Crawler\Strategy\StrategyFactory;
 use App\ValueObject\WebsiteContents;
-use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Promise;
 use GuzzleHttp\Psr7\Request;
 use Http\Client\HttpAsyncClient;
@@ -49,7 +48,7 @@ class AsyncCrawler implements Crawler
 
         try {
             $results = Promise\unwrap($promises);
-        } catch (ConnectException $exception) {
+        } catch (\Exception $exception) {
             throw CrawlException::cannotLoadCategoryPages($exception);
         }
 
@@ -98,8 +97,8 @@ class AsyncCrawler implements Crawler
              * @todo: Keep iterating through promises and process right after one is fulfilled.
              */
             $results = Promise\unwrap($promises);
-        } catch (ConnectException $exception) {
-            throw CrawlException::cannotLoadCategoryPages($exception);
+        } catch (\Exception $exception) {
+            throw CrawlException::cannotLoadCategoryPages($provider, $exception);
         }
 
         /**

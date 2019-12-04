@@ -6,6 +6,7 @@ use Acelaya\Doctrine\Type\PhpEnumType;
 use App\Types\Category;
 use App\Types\ORM\BitType;
 use App\Types\ProviderType;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Types\Type;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
@@ -60,15 +61,14 @@ class Kernel extends BaseKernel
     {
         parent::boot();
 
-        PhpEnumType::registerEnumType(Category::class);
-        PhpEnumType::registerEnumType(ProviderType::class);
-
-        Type::addType("bit", BitType::class);
+        Type::hasType(Category::class) || PhpEnumType::registerEnumType(Category::class);
+        Type::hasType(ProviderType::class) || PhpEnumType::registerEnumType(ProviderType::class);
+        Type::hasType("bit") || Type::addType("bit", BitType::class);
 
         $em = $this->getContainer()->get('doctrine.orm.default_entity_manager');
 
         $platform = $em->getConnection()->getDatabasePlatform();
-//        $platform->registerDoctrineTypeMapping('VARCHAR', Category::class);
+        $platform->registerDoctrineTypeMapping('VARCHAR', Category::class);
         $platform->registerDoctrineTypeMapping('VARCHAR', ProviderType::class);
         $platform->registerDoctrineTypeMapping('BIT', "bit");
 
