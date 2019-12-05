@@ -5,6 +5,8 @@ namespace App\Command;
 use App\Entity\NewsProvider;
 use App\Entity\NewsProviderCategory;
 use App\Entity\RawPost;
+use App\Repository\NewsProviderRepository;
+use App\Repository\RawPostRepository;
 use App\Service\Crawler\Crawler;
 use App\Service\Parser\ParserFactory;
 use App\Service\Persistence\Exception\DuplicateException;
@@ -54,15 +56,14 @@ class CrawlCommand extends Command
         Crawler $crawler,
         ParserFactory $postItemParserFactory,
         UnparsedPostPersister $unparsedPostPersister,
-        EntityManagerInterface $entityManager
+        NewsProviderRepository $providerRepository,
+        RawPostRepository $rawPostRepository
     ) {
         $this->crawler               = $crawler;
         $this->postItemParserFactory = $postItemParserFactory;
         $this->unparsedPostPersister = $unparsedPostPersister;
-
-        // configure service factory methods for these in services.yaml
-        $this->providerRepository    = $entityManager->getRepository(NewsProvider::class);
-        $this->rawPostRepository     = $entityManager->getRepository(RawPost::class);
+        $this->providerRepository    = $providerRepository;
+        $this->rawPostRepository     = $rawPostRepository;
 
         parent::__construct();
     }

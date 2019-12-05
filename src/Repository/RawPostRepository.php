@@ -3,10 +3,17 @@
 namespace App\Repository;
 
 use App\Entity\NewsProvider;
-use Doctrine\ORM\EntityRepository;
+use App\Entity\RawPost;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Persistence\ManagerRegistry;
 
-class RawPostRepository extends EntityRepository
+class RawPostRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $managerRegistry)
+    {
+        parent::__construct($managerRegistry, RawPost::class);
+    }
+
     public function postExists(NewsProvider $provider, string $providerKey): bool
     {
         $count = $this->count([

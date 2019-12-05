@@ -4,31 +4,27 @@ namespace App\Service\Persistence;
 
 use App\Entity\NewsProvider;
 use App\Entity\RawPost;
+use App\Repository\RawPostRepository;
 use App\Service\Persistence\Exception\DuplicateException;
 use App\ValueObject\WebsiteContents;
-use Doctrine\ORM\EntityManagerInterface;
-
+use Doctrine\Common\Persistence\ObjectManager;
 
 class UnparsedPostPersister
 {
     /**
-     * @var \Doctrine\ORM\EntityManagerInterface
+     * @var \Doctrine\Common\Persistence\ObjectManager
      */
-    private $entityManager;
+    private $objectManager;
 
     /**
-     * @var \Doctrine\ORM\EntityRepository
+     * @var \App\Repository\RawPostRepository
      */
     private $repository;
 
-    /**
-     * @todo: Make this ObjectManager
-     * @todo: Autowire repository
-     */
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(ObjectManager $objectManager, RawPostRepository $rawPostRepository)
     {
-        $this->entityManager = $entityManager;
-        $this->repository    = $entityManager->getRepository(RawPost::class);
+        $this->objectManager = $objectManager;
+        $this->repository    = $rawPostRepository;
     }
 
     /**
@@ -61,8 +57,8 @@ class UnparsedPostPersister
             ->setProviderKey($providerKey)
             ->setCreatedAt(new \DateTime('now', new \DateTimeZone('UTC')));
 
-        $this->entityManager->persist($unparsedPost);
-        $this->entityManager->flush($unparsedPost);
+        $this->objectManager->persist($unparsedPost);
+        $this->objectManager->flush();
 
         return $unparsedPost;
     }
